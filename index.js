@@ -16,16 +16,16 @@ HtmlWebpackInlineSourcePlugin.prototype.apply = function (compiler) {
     self.htmlWebpackPlugin
       .getHooks(compilation)
       .alterAssetTagGroups.tapAsync('html-webpack-inline-source-plugin', (htmlPluginData, callback) => {
-        if (!htmlPluginData.plugin.options.inlineSource) {
-          return callback(null, htmlPluginData);
-        }
+      if (!htmlPluginData.plugin.options.inlineSource) {
+        return callback(null, htmlPluginData);
+      }
 
-        var regexStr = htmlPluginData.plugin.options.inlineSource;
+      var regexStr = htmlPluginData.plugin.options.inlineSource;
 
-        var result = self.processTags(compilation, regexStr, htmlPluginData);
+      var result = self.processTags(compilation, regexStr, htmlPluginData);
 
-        callback(null, result);
-      });
+      callback(null, result);
+    });
   });
 };
 
@@ -82,7 +82,6 @@ HtmlWebpackInlineSourcePlugin.prototype.resolveSourceMaps = function (compilatio
 
 HtmlWebpackInlineSourcePlugin.prototype.processTag = function (compilation, regex, tag, filename) {
   var assetUrl;
-  var preTag = tag;
 
   // inline js
   if (tag.tagName === 'script' && tag.attributes && regex.test(tag.attributes.src)) {
@@ -95,7 +94,7 @@ HtmlWebpackInlineSourcePlugin.prototype.processTag = function (compilation, rege
       }
     };
 
-  // inline css
+    // inline css
   } else if (tag.tagName === 'link' && regex.test(tag.attributes.href)) {
     assetUrl = tag.attributes.href;
     tag = {
@@ -116,12 +115,8 @@ HtmlWebpackInlineSourcePlugin.prototype.processTag = function (compilation, rege
     }
     var assetName = path.posix.relative(publicUrlPrefix, assetUrl);
     var asset = getAssetByName(compilation.assets, assetName);
-    if (compilation.assets[assetName] !== undefined) {
-      var updatedSource = this.resolveSourceMaps(compilation, assetName, asset);
-      tag.innerHTML = (tag.tagName === 'script') ? updatedSource.replace(/(<)(\/script>)/g, '\\x3C$2') : updatedSource;
-    }else{
-      return preTag;
-    }
+    var updatedSource = this.resolveSourceMaps(compilation, assetName, asset);
+    tag.innerHTML = (tag.tagName === 'script') ? updatedSource.replace(/(<)(\/script>)/g, '\\x3C$2') : updatedSource;
   }
 
   return tag;
